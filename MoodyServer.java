@@ -16,7 +16,6 @@ public class MoodyServer {
     }
 
     private static void handleRequest(HttpExchange exchange) throws IOException {
-        // CORS заголовки
         exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
@@ -30,12 +29,27 @@ public class MoodyServer {
             String requestBody = readInputStream(exchange.getRequestBody());
             String mood = extractMood(requestBody);
 
-            String prompt = String.format(
-                "User mood: '%s'. Provide exactly 3 lines:\n" +
-                "1. [Book Title]\n" +
-                "2. [Movie Title]\n" +
-                "3. [Artist Name] - [Song Title]\n" + 
-                "Write ONLY the titles. No quotes, no intro text.", mood);
+           String prompt = String.format(
+                "User input: '%s'.\n" +
+                "Task:\n" +
+                "0. Perform a deep SEMANTIC research. Analyze the hidden meaning, era, and emotional weight of the input.\n" +
+                "1. Identify the specific Book, Movie, or Song from the input.\n" +
+                "2. Determine its genre/mood (e.g., Happy, Dark, Sci-Fi) and find 2 matching items of different media types.\n" +
+                "3. CRITICAL: The Book must correlate with the SOUL of the input. If the input is a pop song about 'little things', find a book about 'daily happiness', NOT just a book with the word 'Little' in the title.\n" +
+                "4. IMPORTANT: Place the EXACT user input '%s' in its correct category (Line 1 for Book, Line 2 for Movie, Line 3 for Song).\n" +
+                "\n" +
+                "STRICT OUTPUT RULES:\n" +
+                "- Provide EXACTLY 3 numbered lines and NOTHING ELSE.\n" +
+                "- NO descriptions, NO years, NO genre names, NO labels like 'is a song'.\n" +
+                "- NO intro or outro text.\n" +
+                "- NO quotes.\n" +
+                "- ALL 3 items MUST share the exact same emotional vibe.\n" +
+                "\n" +
+                "Format:\n" +
+                "1. [Book Title Only]\n" +
+                "2. [Movie Title Only]\n" +
+                "3. [Artist - Song Title Only]", 
+                mood, mood);
 
             String aiResponse = callGroq(prompt);
             String cleanText = parseGroqResponse(aiResponse);
@@ -52,11 +66,10 @@ public class MoodyServer {
     private static String callGroq(String prompt) throws Exception {
         String url = "https://api.groq.com/openai/v1/chat/completions";
         
-        // Экранируем только самые опасные символы
         String safePrompt = prompt.replace("\"", "'").replace("\n", " ");
 
         String body = "{" +
-            "\"model\": \"llama-3.1-8b-instant\"," + // СМЕНИЛИ МОДЕЛЬ НА БЫСТРУЮ
+            "\"model\": \"llama-3.1-8b-instant\"," + 
             "\"messages\": [{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}]," +
             "\"temperature\": 0.5" +
         "}";
@@ -64,10 +77,12 @@ public class MoodyServer {
         URL urlObj = new URL(url);
         HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
         conn.setRequestMethod("POST");
+        System.out.println("DEBUG KEY: [" + GROQ_API_KEY + "]");
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Authorization", "Bearer " + GROQ_API_KEY);
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
         conn.setDoOutput(true);
-
+        
         try (OutputStream os = conn.getOutputStream()) {
             os.write(body.getBytes(StandardCharsets.UTF_8));
         }
@@ -84,48 +99,44 @@ public class MoodyServer {
 
     private static String parseGroqResponse(String json) {
         try {
-            // Ищем начало текста в поле content
-            String marker = "\"content\":\"";
-            // Убираем пробелы из JSON для надежности поиска
-            String minifiedJson = json.replace(" ", "");
+            String marker = "\"content\":";
+            int startPos = json.indexOf(marker);
             
-            int start = minifiedJson.indexOf(marker);
-            if (start == -1) {
-                // Если не нашли без пробелов, ищем с пробелами
-                marker = "\"content\": \"";
-                start = json.indexOf(marker);
+            if (startPos == -1) {
+                System.err.println("❌ Critical: No 'content' field in JSON. Raw response: " + json);
+                return "The Great Gatsby\nInception\nRadiohead - Creep"; // Заглушка, если API ответил странно
             }
 
-            if (start == -1) {
-                System.err.println("DEBUG: Content not found. Full JSON: " + json);
+            int quoteStart = json.indexOf("\"", startPos + marker.length());
+            int quoteEnd = -1;
+            
+            for (int i = quoteStart + 1; i < json.length(); i++) {
+                if (json.charAt(i) == '\"' && json.charAt(i - 1) != '\\') {
+                    quoteEnd = i;
+                    break;
+                }
+            }
+
+            if (quoteStart == -1 || quoteEnd == -1) {
                 return "1. Error\n2. Error\n3. Error";
             }
 
-            start += marker.length();
-            int end = json.indexOf("\"", start);
-            
-            // Извлекаем текст и заменяем экранированные символы
-            String content = json.substring(start, end)
+            String content = json.substring(quoteStart + 1, quoteEnd)
                 .replace("\\n", "\n")
                 .replace("\\\"", "\"")
                 .replace("\\\\", "\\");
 
-            // Если ИИ вернул пустой текст или только ID
-            if (content.length() < 10) {
-                System.err.println("DEBUG: Content too short. Raw: " + content);
-                return "The Great Gatsby\nInception\nRadiohead - Creep"; // Заглушка для теста
-            }
-
             return content.trim();
-        } catch (Exception e) {
-            e.printStackTrace();
+            
+        } catch (Exception ex) {
+            System.err.println("❌ Parsing failed: " + ex.getMessage());
+            ex.printStackTrace();
             return "1. Error\n2. Error\n3. Error";
         }
     }
 
     private static String extractMood(String json) {
         try {
-            // Упрощенный поиск значения "mood" в JSON
             int start = json.indexOf(":") + 2;
             int end = json.lastIndexOf("\"");
             return json.substring(start, end).replace("\"", "");

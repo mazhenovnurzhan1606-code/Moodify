@@ -25,7 +25,7 @@
             <p>Searching for your vibe...</p>
         </div>
 
-        <div id="result" class="result-container">
+        <div id="result" class="result-container" style="display: none;">
             <div class="card">
                 <div class="media-container"><img id="book-cover" src="" alt=""></div>
                 <div class="card-content"><h3>Book</h3><p id="book-text"></p></div>
@@ -106,7 +106,6 @@
         }
 
         function renderUI(data) {
-            // 1. Заполняем контент
             document.getElementById("book-cover").src = data.bookImg;
             document.getElementById("book-text").innerText = data.book;
             document.getElementById("movie-poster").src = data.movieImg;
@@ -114,19 +113,15 @@
             document.getElementById("music-cover").src = data.musicImg;
             document.getElementById("music-text").innerText = data.music;
 
-            // КНИГА
             const bookCard = document.getElementById("book-cover").closest('.card');
             bookCard.onclick = () => openDetails('book', data.book);
 
-            // ФИЛЬМ
             const movieCard = document.getElementById("movie-poster").closest('.card');
             movieCard.onclick = () => openDetails('movie', data.movie);
 
-            // МУЗЫКА (Музыку можно оставить как есть с плеером, или открывать Deezer)
             const musicCard = document.getElementById("music-cover").closest('.card');
             musicCard.onclick = () => window.open(`https://www.deezer.com/search/${encodeURIComponent(data.music)}`, '_blank');
 
-            // 5. Плеер и анимация появления
             document.getElementById("player-container").innerHTML = data.preview 
                 ? `<audio controls style="width:100%; margin-top:15px;"><source src="${data.preview}"></audio>` 
                 : "";
@@ -182,9 +177,9 @@
 
         async function find() {
             const btn = document.getElementById("submitBtn");
-            if (btn.disabled) return; // Выходим, если поиск уже идет
+            if (btn.disabled) return;
 
-            btn.disabled = true; // Выключаем кнопку
+            btn.disabled = true;
             btn.style.opacity = "0.5";
             btn.innerText = "Wait...";
 
@@ -195,7 +190,6 @@
             const resultDiv = document.getElementById("result");
             const loader = document.getElementById("loader");
                 
-            // 1. Сброс состояния и запуск лоадера
             resultDiv.classList.remove("show");
             resultDiv.style.display = "none";
             loader.style.display = "flex";
@@ -210,45 +204,38 @@
                 if (!response.ok) throw new Error("SERVER_ERROR");
             
                 const text = await response.text();
-                console.log("Raw response from Java:", text); // Отладка в консоли браузера
+                console.log("Raw response from Java:", text);
             
-                // 2. Жёсткая проверка на ошибки API в тексте
                 if (text.includes("error") || text.includes("Empty Response") || text.includes("Parsing Failed")) {
                     throw new Error("API_BUSY");
                 }
             
-                // 3. Разбиваем текст на строки и убираем лишний мусор
                 const lines = text.split(/\r?\n/)
                     .map(line => line.trim())
-                    // Фильтруем: убираем пустые строки и те, что содержат системные ошибки
                     .filter(line => line.length > 2 && !line.toLowerCase().includes("error") && !line.includes("{"));
 
                 console.log("Lines after server response:", lines);
 
-                // ПРОВЕРКА: Если сервер прислал меньше 3 строк или ошибку
                 if (lines.length < 3 || lines[0].toLowerCase().includes("error")) {
                     console.error("Server returned an error message:", text);
-                    throw new Error("API_BUSY"); // Это вызовет alert про лимиты ИИ вместо спама в Google
+                    throw new Error("API_BUSY");
                 }
 
-                // 4. Очистка строк от номеров "1.", кавычек и точек в конце
-                const fmt = (s) => s.replace(/^[1-3]\.\s*/, "") // Убирает "1. ", "2. ", "3. "
-                                    .replace(/^[-*]\s*/, "")    // Убирает дефисы или звездочки (бывает у Llama)
-                                    .replace(/^["']|["']$/g, "") // Убирает кавычки по бокам
-                                    .replace(/\.$/, "")         // Убирает точку в самом конце названия
+                const fmt = (s) => s.replace(/^[1-3]\.\s*/, "") 
+                                    .replace(/^[-*]\s*/, "")   
+                                    .replace(/^["']|["']$/g, "")
+                                    .replace(/\.$/, "")         
                                     .trim();
 
                 let bT = fmt(lines[0]);
                 let mT = fmt(lines[1]);
                 let muT = fmt(lines[2]);
 
-                // Финальная проверка на "мусорные" данные
                 if (bT.toLowerCase().includes("object") || bT.length < 2) {
                     throw new Error("FORMAT_ERROR");
                 }
 
                 console.log("Ready to search for covers:", { bT, mT, muT });
-                // 5. Параллельный поиск обложек через внешние API
                 const [bImg, mImg, mData] = await Promise.all([
                     fetchBookCover(bT),
                     fetchMoviePoster(mT),
@@ -265,7 +252,6 @@
                     preview: mData.preview 
                 };
                 
-                // 6. Выключаем лоадер и рисуем UI
                 loader.style.display = "none";
                 renderUI(finalData);
                 saveResult(bT, mT, muT, bImg, mImg, mData.cover, mData.preview);
@@ -288,10 +274,9 @@
                 } else if (err.message === "FORMAT_ERROR") {
                     alert("AI sent a messy response. Please try to describe your mood differently.");
                 } else {
-                    alert("Connection lost. Make sure VibeServer is running!");
+                    alert("Connection lost. Make sure MoodyServer is running!");
                 }
             }finally{
-                // Включаем кнопку обратно через 3 секунды после завершения
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.style.opacity = "1";
@@ -301,11 +286,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Находим ВСЕ кнопки закрытия во всех модальных окнах
             const closeButtons = document.querySelectorAll(".close-button");
             closeButtons.forEach(btn => {
                 btn.onclick = function() {
-                    // Ищем ближайшее родительское модальное окно и скрываем его
                     const modal = this.closest('.modal');
                     if (modal) modal.style.display = "none";
                 };
@@ -336,7 +319,6 @@
             }
         }
 
-        // Функция открытия окна деталей
         async function openDetails(type, title) {
             const modal = document.getElementById("detailsModal");
             const dTitle = document.getElementById("detailsTitle");
@@ -345,9 +327,9 @@
             const dSub = document.getElementById("detailsSub");
             const dAction = document.getElementById("detailsAction");
 
-            // Показываем, что грузим данные
             dTitle.innerText = "Loading...";
             dDesc.innerText = "Fetching details from AI & APIs...";
+            dImg.src = 'https://placehold.co/200x300?text=Loading...'; 
             modal.style.display = "flex";
 
             try {
@@ -358,7 +340,6 @@
                     if (!json.items || json.items.length === 0) {
                         dTitle.innerText = title;
                         dDesc.innerText = "Sorry, we couldn't find detailed information for this book.";
-                        dAction.innerHTML = `<a href="https://www.google.com/search?tbm=bks&q=${encodeURIComponent(title)}" target="_blank" class="find-button" style="text-decoration:none; padding: 10px 20px;">Search on Google Books</a>`;
                         return; 
                     }
 
@@ -366,7 +347,9 @@
                     dTitle.innerText = info.title;
                     dSub.innerText = `Author: ${info.authors?.join(', ') || 'Unknown'}`;
                     dImg.src = info.imageLinks?.thumbnail?.replace("http://", "https://") || 'https://placehold.co/200x300?text=No+Cover';
-                    dDesc.innerText = info.description || "No description available for this book.";
+                    
+                    let desc = info.description || "No description available.";
+                    dDesc.innerText = desc.length > 500 ? desc.substring(0, 500) + "..." : desc;
 
                     const searchQuery = encodeURIComponent(info.title + " " + (info.authors ? info.authors[0] : ""));
                     dAction.innerHTML = `<a href="https://www.google.com/search?tbm=bks&q=${searchQuery}" target="_blank" class="find-button" style="text-decoration:none; padding: 10px 20px;">Read More (Search)</a>`;
@@ -378,19 +361,21 @@
                     if (info.Response === "False") {
                         dTitle.innerText = title;
                         dDesc.innerText = "Movie details not found.";
-                        dImg.src = 'https://placehold.co/200x300?text=No+Poster';
                         return;
                     }
 
                     dTitle.innerText = info.Title;
                     dSub.innerText = `${info.Year} • Directed by ${info.Director}`;
                     dImg.src = (info.Poster && info.Poster !== "N/A") ? info.Poster : 'https://placehold.co/200x300?text=No+Poster';
-                    dDesc.innerText = info.Plot || "No plot summary available.";
+                    
+                    let plot = info.Plot || "No plot summary available.";
+                    dDesc.innerText = plot.length > 500 ? plot.substring(0, 500) + "..." : plot;
+
                     dAction.innerHTML = `<a href="https://www.imdb.com/title/${info.imdbID}" target="_blank" class="find-button" style="text-decoration:none; padding: 10px 20px;">View on IMDb</a>`;
                 }
             } catch (e) {
                 console.error("Details Error:", e);
-                dDesc.innerText = "Failed to load details. Please try again.";
+                dDesc.innerText = "Failed to load details.";
             }
         }
 

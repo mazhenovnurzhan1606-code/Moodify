@@ -1,8 +1,7 @@
-/* Базовые настройки */
 body {
     margin: 0;
     padding: 0;
-    background-color: #F8F5F2; /* Светлый кремовый фон */
+    background-color: #F8F5F2;
     color: #2D2A26;
     font-family: "Quicksand", sans-serif;
     display: flex;
@@ -10,7 +9,6 @@ body {
     min-height: 100vh;
 }
 
-/* Шапка страницы */
 header {
     background-color: #3A3F58;
     color: #F8F5F2;
@@ -32,7 +30,6 @@ header h1 {
     letter-spacing: 1px;
 }
 
-/* Основной контент */
 .story-wrapper {
     flex: 1;
     display: flex;
@@ -63,7 +60,6 @@ header h1 {
     color: #4A4744;
 }
 
-/* Цитата/Миссия */
 .mission-quote {
     margin: 50px 0;
     padding: 30px;
@@ -76,7 +72,6 @@ header h1 {
     line-height: 1.6;
 }
 
-/* Футер внутри карточки */
 .story-footer {
     margin-top: 60px;
     padding-top: 40px;
@@ -84,7 +79,6 @@ header h1 {
     text-align: center;
 }
 
-/* Кнопка */
 .cta-button {
     display: inline-block;
     padding: 16px 40px;
@@ -103,7 +97,6 @@ header h1 {
     box-shadow: 0 10px 20px rgba(58, 63, 88, 0.2);
 }
 
-/* Подвал сайта */
 footer {
     text-align: center;
     padding: 40px;
@@ -111,7 +104,6 @@ footer {
     color: #A09D9A;
 }
 
-/* Адаптивность для телефонов */
 @media (max-width: 768px) {
     .story-card {
         padding: 40px 30px;
