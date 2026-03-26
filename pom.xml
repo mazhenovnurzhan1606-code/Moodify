@@ -8,8 +8,6 @@
     <artifactId>moodify</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <sourceDirectory>.</sourceDirectory>
-
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -25,6 +23,8 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>.</sourceDirectory>
+        
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
