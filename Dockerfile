@@ -10,5 +10,6 @@ WORKDIR /app
 # Копируем jar из этапа сборки
 COPY --from=build /app/target/*.jar app.jar 
 # Render сам назначит PORT, но мы укажем стандарт для ясности
+COPY index.html .
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

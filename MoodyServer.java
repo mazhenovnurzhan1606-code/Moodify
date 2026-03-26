@@ -22,18 +22,22 @@ public class MoodyServer {
 
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
         File file = new File("index.html");
-        if (file.exists()) {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            exchange.sendResponseHeaders(200, bytes.length);
-            OutputStream os = exchange.getResponseBody();
-            os.write(bytes);
-            os.close();
-        } else {
+        
+        if (!file.exists()) {
+            System.out.println("❌ Critical: index.html not found at " + file.getAbsolutePath());
             String error = "404: index.html not found on server";
             exchange.sendResponseHeaders(404, error.length());
-            OutputStream os = exchange.getResponseBody();
-            os.write(error.getBytes());
-            os.close();
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(error.getBytes());
+            }
+            return;
+        }
+
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        exchange.getResponseHeaders().set("Content-Type", "text/html; charset=UTF-8");
+        exchange.sendResponseHeaders(200, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(bytes);
         }
     }
 
