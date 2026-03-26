@@ -8,10 +8,13 @@ public class MoodyServer {
 
     private static final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
     public static void main(String[] args) throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        String portEnv = System.getenv("PORT");
+        int port = (portEnv != null) ? Integer.parseInt(portEnv) : 8080;
+
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/recommend", MoodyServer::handleRequest);
         server.start();
-        System.out.println("✅ Server started at http://localhost:8080");
+        System.out.println("✅ Server started on port: " + port);
         System.out.println("🚀 Ready for vibes!");
     }
 
@@ -104,7 +107,7 @@ public class MoodyServer {
             
             if (startPos == -1) {
                 System.err.println("❌ Critical: No 'content' field in JSON. Raw response: " + json);
-                return "The Great Gatsby\nInception\nRadiohead - Creep"; // Заглушка, если API ответил странно
+                return "The Great Gatsby\nInception\nRadiohead - Creep"; 
             }
 
             int quoteStart = json.indexOf("\"", startPos + marker.length());
