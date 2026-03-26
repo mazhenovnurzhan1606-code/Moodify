@@ -4,9 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.io.File;
-import java.io.OutputStream;
-import java.io.IOException;
 
 public class MoodyServer {
 
@@ -32,7 +29,7 @@ public class MoodyServer {
         }
 
         // Убираем начальный слэш для поиска файла в папке
-        File file = new File(path.substring(1));
+        File file = new File("." + path);
 
         if (file.exists() && !file.isDirectory()) {
             // Определяем тип контента (Content-Type)

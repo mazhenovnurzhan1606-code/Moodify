@@ -7,18 +7,16 @@ COPY . .
 # Собираем проект (пропускаем тесты для скорости)
 RUN mvn clean package -DskipTests
 
-# ЭТАП 2: Запуск (Легкий образ Java)
+# Этап 2: Запуск
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
-# Вот здесь мы обращаемся к стадии build из первой строки
+# Копируем JAR
 COPY --from=build /app/target/*.jar app.jar
 
-# Копируем все статические файлы для фронтенда
-COPY *.html .
-COPY *.css .
-# Если есть JS файлы, раскомментируй строку ниже:
-# COPY *.js .
+# Копируем фронтенд (все HTML и CSS файлы)
+COPY *.html ./
+COPY *.css ./
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
