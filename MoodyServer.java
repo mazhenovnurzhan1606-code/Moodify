@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.IOException;
 
 public class MoodyServer {
 
@@ -21,38 +24,38 @@ public class MoodyServer {
     }
 
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
-    String path = exchange.getRequestURI().getPath();
-    
-    // Если зашли в корень "/", отдаем index.html
-    if (path.equals("/")) {
-        path = "/index.html";
-    }
-
-    // Убираем начальный слэш для поиска файла в папке
-    File file = new File(path.substring(1));
-
-    if (file.exists() && !file.isDirectory()) {
-        // Определяем тип контента (Content-Type)
-        String contentType = "text/plain";
-        if (path.endsWith(".html")) contentType = "text/html; charset=UTF-8";
-        else if (path.endsWith(".css")) contentType = "text/css";
-        else if (path.endsWith(".js")) contentType = "application/javascript";
-
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        exchange.getResponseHeaders().set("Content-Type", contentType);
-        exchange.sendResponseHeaders(200, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
+        String path = exchange.getRequestURI().getPath();
+        
+        // Если зашли в корень "/", отдаем index.html
+        if (path.equals("/")) {
+            path = "/index.html";
         }
-    } else {
-        // Если файла нет, отдаем 404
-        String error = "404 Not Found: " + path;
-        exchange.sendResponseHeaders(404, error.length());
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(error.getBytes());
+
+        // Убираем начальный слэш для поиска файла в папке
+        File file = new File(path.substring(1));
+
+        if (file.exists() && !file.isDirectory()) {
+            // Определяем тип контента (Content-Type)
+            String contentType = "text/plain";
+            if (path.endsWith(".html")) contentType = "text/html; charset=UTF-8";
+            else if (path.endsWith(".css")) contentType = "text/css";
+            else if (path.endsWith(".js")) contentType = "application/javascript";
+
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        } else {
+            // Если файла нет, отдаем 404
+            String error = "404 Not Found: " + path;
+            exchange.sendResponseHeaders(404, error.length());
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(error.getBytes());
+            }
         }
     }
-}
 
     private static void handleRequest(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
