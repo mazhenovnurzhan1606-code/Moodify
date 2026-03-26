@@ -23,20 +23,21 @@ public class MoodyServer {
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         
-        // Если зашли в корень "/", отдаем index.html
         if (path.equals("/")) {
             path = "/index.html";
         }
 
-        // Убираем начальный слэш для поиска файла в папке
         File file = new File("." + path);
 
+        System.out.println("🔍 Ищу файл по пути: " + file.getAbsolutePath());
+
         if (file.exists() && !file.isDirectory()) {
-            // Определяем тип контента (Content-Type)
             String contentType = "text/plain";
             if (path.endsWith(".html")) contentType = "text/html; charset=UTF-8";
             else if (path.endsWith(".css")) contentType = "text/css";
             else if (path.endsWith(".js")) contentType = "application/javascript";
+            else if (path.endsWith(".png")) contentType = "image/png";
+            else if (path.endsWith(".jpg")) contentType = "image/jpeg";
 
             byte[] bytes = Files.readAllBytes(file.toPath());
             exchange.getResponseHeaders().set("Content-Type", contentType);
@@ -45,7 +46,7 @@ public class MoodyServer {
                 os.write(bytes);
             }
         } else {
-            // Если файла нет, отдаем 404
+            System.out.println("❌ Файл не найден: " + path);
             String error = "404 Not Found: " + path;
             exchange.sendResponseHeaders(404, error.length());
             try (OutputStream os = exchange.getResponseBody()) {

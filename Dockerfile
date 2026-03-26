@@ -16,7 +16,7 @@ COPY --from=build /app/target/*.jar app.jar
 
 # Копируем фронтенд (все HTML и CSS файлы)
 COPY *.html ./
-COPY *.css ./
+COPY css/ ./css/
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
