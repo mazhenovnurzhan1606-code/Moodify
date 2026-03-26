@@ -21,23 +21,32 @@ public class MoodyServer {
     }
 
     private static void handleStaticFile(HttpExchange exchange) throws IOException {
-        File file = new File("index.html");
+        String path = exchange.getRequestURI().getPath();
         
-        if (!file.exists()) {
-            System.out.println("❌ Critical: index.html not found at " + file.getAbsolutePath());
-            String error = "404: index.html not found on server";
+        if (path.equals("/")) {
+            path = "/index.html";
+        }
+
+        File file = new File(path.substring(1));
+
+        if (file.exists() && !file.isDirectory()) {
+            String contentType = "text/plain";
+            if (path.endsWith(".html")) contentType = "text/html; charset=UTF-8";
+            else if (path.endsWith(".css")) contentType = "text/css";
+            else if (path.endsWith(".js")) contentType = "application/javascript";
+
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        } else {
+            String error = "404 Not Found: " + path;
             exchange.sendResponseHeaders(404, error.length());
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(error.getBytes());
             }
-            return;
-        }
-
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        exchange.getResponseHeaders().set("Content-Type", "text/html; charset=UTF-8");
-        exchange.sendResponseHeaders(200, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
         }
     }
 

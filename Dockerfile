@@ -1,15 +1,16 @@
-# Этап 1: Сборка (используем проверенный образ Maven)
-FROM maven:3.8.5-openjdk-17 AS build
-WORKDIR /app
-COPY . .
-RUN mvn clean package -DskipTests
-
-# Этап 2: Запуск (меняем образ на проверенный Eclipse Temurin)
+# Этап 2: Запуск
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-# Копируем jar из этапа сборки
-COPY --from=build /app/target/*.jar app.jar 
-# Render сам назначит PORT, но мы укажем стандарт для ясности
-COPY index.html .
+
+# Копируем скомпилированный JAR
+COPY --from=build /app/target/*.jar app.jar
+
+# Копируем ВООБЩЕ ВСЕ файлы из текущей папки (включая our_story.html, style.css и т.д.)
+# Docker автоматически проигнорирует папку target и src, если есть .dockerignore, 
+# но для нас сейчас важно, чтобы все .html были на месте.
+COPY *.html .
+COPY *.css .
+# Если есть папка с картинками, добавь: COPY images/ ./images/ (если она есть)
+
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
