@@ -3,6 +3,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class MoodyServer {
 
@@ -13,9 +14,27 @@ public class MoodyServer {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/recommend", MoodyServer::handleRequest);
+        server.createContext("/", MoodyServer::handleStaticFile);
         server.start();
         System.out.println("✅ Server started on port: " + port);
         System.out.println("🚀 Ready for vibes!");
+    }
+
+    private static void handleStaticFile(HttpExchange exchange) throws IOException {
+        File file = new File("index.html");
+        if (file.exists()) {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            exchange.sendResponseHeaders(200, bytes.length);
+            OutputStream os = exchange.getResponseBody();
+            os.write(bytes);
+            os.close();
+        } else {
+            String error = "404: index.html not found on server";
+            exchange.sendResponseHeaders(404, error.length());
+            OutputStream os = exchange.getResponseBody();
+            os.write(error.getBytes());
+            os.close();
+        }
     }
 
     private static void handleRequest(HttpExchange exchange) throws IOException {
