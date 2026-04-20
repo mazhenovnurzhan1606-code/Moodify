@@ -70,21 +70,21 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "Act as an expert in NLU (Natural Language Understanding) and Semantic Analysis. " +
-                "Analyze the following user input: '%s'.\n\n" +
-                "Your goal is to understand the deeper emotional state, subtext, and 'vibe' of the message, " +
-                "not just keywords. Then, recommend 3 items that perfectly match this soulful essence.\n\n" +
+                "Act as a Semantic Analysis Expert. Analyze this user input: '%s'.\n\n" +
+                "TASK:\n" +
+                "1. IDENTIFY: Determine if the input is a Book, a Movie, or a Song.\n" +
+                "2. MIRROR: You MUST include the exact input '%s' in the corresponding category in your output.\n" +
+                "3. MATCH: Provide 2 additional matching recommendations for the remaining categories that share the same 'soul', era, and emotional weight.\n\n" +
                 "STRICT OUTPUT RULES:\n" +
-                "1. Return EXACTLY 3 lines and NOTHING ELSE.\n" +
-                "2. Line 1 must be a BOOK.\n" +
-                "3. Line 2 must be a MOVIE.\n" +
-                "4. Line 3 must be a SONG (Artist - Title).\n" +
-                "5. NO descriptions, NO labels like 'Movie:', NO quotes, NO introduction.\n\n" +
-                "Example Output:\n" +
-                "The Catcher in the Rye\n" +
-                "Lost in Translation\n" +
-                "Radiohead - No Surprises",
-                mood
+                "- Line 1: BOOK title only\n" +
+                "- Line 2: MOVIE title only\n" +
+                "- Line 3: SONG (Artist - Title) only\n" +
+                "- NO extra text, NO quotes, NO labels.\n\n" +
+                "EXAMPLE (if input was 'Inception'):\n" +
+                "Ubik\n" +
+                "Inception\n" +
+                "Hans Zimmer - Time",
+                mood, mood
             );
 
             String aiResponse = callGroq(prompt);
