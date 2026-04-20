@@ -70,26 +70,22 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "User input: '%s'.\n" +
-                "Task:\n" +
-                "0. Perform a deep SEMANTIC research. Analyze the hidden meaning, era, and emotional weight of the input.\n" +
-                "1. Identify the specific Book, Movie, or Song from the input.\n" +
-                "2. Determine its genre/mood (e.g., Happy, Dark, Sci-Fi) and find 2 matching items of different media types.\n" +
-                "3. CRITICAL: The Book must correlate with the SOUL of the input. If the input is a pop song about 'little things', find a book about 'daily happiness', NOT just a book with the word 'Little' in the title.\n" +
-                "4. IMPORTANT: Place the EXACT user input '%s' in its correct category (Line 1 for Book, Line 2 for Movie, Line 3 for Song).\n" +
-                "\n" +
+                "Act as an expert in NLU (Natural Language Understanding) and Semantic Analysis. " +
+                "Analyze the following user input: '%s'.\n\n" +
+                "Your goal is to understand the deeper emotional state, subtext, and 'vibe' of the message, " +
+                "not just keywords. Then, recommend 3 items that perfectly match this soulful essence.\n\n" +
                 "STRICT OUTPUT RULES:\n" +
-                "- Provide EXACTLY 3 numbered lines and NOTHING ELSE.\n" +
-                "- NO descriptions, NO years, NO genre names, NO labels like 'is a song'.\n" +
-                "- NO intro or outro text.\n" +
-                "- NO quotes.\n" +
-                "- ALL 3 items MUST share the exact same emotional vibe.\n" +
-                "\n" +
-                "Format:\n" +
-                "1. [Book Title Only]\n" +
-                "2. [Movie Title Only]\n" +
-                "3. [Artist - Song Title Only]", 
-                mood, mood);
+                "1. Return EXACTLY 3 lines and NOTHING ELSE.\n" +
+                "2. Line 1 must be a BOOK.\n" +
+                "3. Line 2 must be a MOVIE.\n" +
+                "4. Line 3 must be a SONG (Artist - Title).\n" +
+                "5. NO descriptions, NO labels like 'Movie:', NO quotes, NO introduction.\n\n" +
+                "Example Output:\n" +
+                "The Catcher in the Rye\n" +
+                "Lost in Translation\n" +
+                "Radiohead - No Surprises",
+                mood
+            );
 
             String aiResponse = callGroq(prompt);
             String cleanText = parseGroqResponse(aiResponse);
@@ -106,12 +102,18 @@ public class MoodyServer {
     private static String callGroq(String prompt) throws Exception {
         String url = "https://api.groq.com/openai/v1/chat/completions";
         
-        String safePrompt = prompt.replace("\"", "'").replace("\n", " ");
+        String safePrompt = prompt.replace("\\", "\\\\")
+                                .replace("\"", "\\\"")
+                                .replace("\n", "\\n")
+                                .replace("\r", "\\r");
 
         String body = "{" +
             "\"model\": \"llama-3.1-8b-instant\"," + 
-            "\"messages\": [{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}]," +
-            "\"temperature\": 0.5" +
+            "\"messages\": [" +
+                "{\"role\": \"system\", \"content\": \"You are a helpful assistant that provides recommendations in a strict 3-line format.\"}," +
+                "{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}" +
+            "]," +
+            "\"temperature\": 0.6" +
         "}";
 
         URL urlObj = new URL(url);
