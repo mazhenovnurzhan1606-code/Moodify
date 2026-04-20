@@ -80,6 +80,7 @@ public class MoodyServer {
                 "- Line 2: MOVIE title only\n" +
                 "- Line 3: SONG (Artist - Title) only\n" +
                 "- NO extra text, NO quotes, NO labels.\n\n" +
+                "IMPORTANT: YOU SHOULD GIVE ONLY THREE LINES OF OUTPUT\n" +
                 "EXAMPLE (if input was 'Inception'):\n" +
                 "Ubik\n" +
                 "Inception\n" +
