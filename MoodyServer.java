@@ -70,21 +70,17 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "You are a metadata engine. Analyze user input: '%s'.\n" +
-                "Rules:\n" +
-                "- If the input is a Book, Movie, or Song, use it as the recommendation for its category.\n" +
-                "- Provide exactly 3 lines (1. Book, 2. Movie, 3. Song).\n" +
-                "- NO labels, NO 'Line 1:', NO intro.\n\n" +
-                "Example:\n" +
-                "Input: 'Interstellar'\n" +
-                "The Martian\n" +
-                "Interstellar\n" +
-                "Hans Zimmer - Stay\n\n" +
-                "Example:\n" +
-                "Input: 'The Great Gatsby'\n" +
-                "The Great Gatsby\n" +
-                "Midnight in Paris\n" +
-                "Lana Del Rey - Young and Beautiful\n\n" +
+                "User input: '%s'. You are an NLU Vibe-Matcher.\n\n" +
+                "CORE RULES:\n" +
+                "1. SEMANTIC ANALYSIS: Break down the input's soul (era, emotional depth, hidden sadness or joy).\n" +
+                "2. VALIDATION: Check every recommendation against the 'vibe' of the input. If it doesn't match the EXACT emotional temperature, discard it and find another.\n" +
+                "3. NO REPEATS: Book and Movie must be different titles.\n" +
+                "4. MIRRORING: If the input is a title, place it in its line.\n\n" +
+                "STRICT OUTPUT FORMAT:\n" +
+                "Line 1: Book\n" +
+                "Line 2: Movie\n" +
+                "Line 3: Song (Artist - Title)\n" +
+                "NO LABELS, NO INTRO, ONLY 3 LINES.\n\n" +
                 "Input: '%s'",
                 mood, mood
             );
