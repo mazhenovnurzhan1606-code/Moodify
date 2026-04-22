@@ -70,11 +70,16 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "Vibe-check: '%s'. " +
-                "Find a matching Book, Movie, and Song. " +
-                "If '%s' is a title, mirror it in the output. " +
-                "Ensure the Book and Movie are different. " +
-                "Output only 3 lines.",
+                "Perform a deep NLU analysis on the user input: '%s'.\n\n" +
+                "1. EXTRACT VIBE: Identify the core emotional energy (e.g., 'High-energy joy', 'Dark academia melancholy', 'Summer road trip vibes').\n" +
+                "2. FIND MATCHES: Recommend a Book, a Movie, and a Song that have the EXACT same emotional frequency.\n" +
+                "3. MIRROR: If the input '%s' is a specific title, include it in the correct line.\n" +
+                "4. NO DISSONANCE: Do not mix a happy song with a sad book. The soul of all 3 items must be identical.\n\n" +
+                "STRICT FORMAT:\n" +
+                "Line 1: [Book Title]\n" +
+                "Line 2: [Movie Title]\n" +
+                "Line 3: [Artist - Song Title]\n" +
+                "NO LABELS, NO CHAT, NO EXPLANATIONS.",
                 mood, mood
             );
 
@@ -98,21 +103,19 @@ public class MoodyServer {
                                 .replace("\n", "\\n")
                                 .replace("\r", "\\r");
 
-        String systemRules = "You are a silent NLU metadata API. " +
-                     "Your output must contain ONLY 3 lines of text. " +
-                     "Line 1: Book Title, Line 2: Movie Title, Line 3: Artist - Song. " +
-                     "STRICT RULES: No labels (No 'Movie:', No 'Book:'), no explanations, no intro sentences. " +
-                     "If you write any explanation, you fail.";
+        String systemRules = "You are a professional NLU-based recommendation engine. " +
+                     "Your only output is 3 lines of text. No labels. " +
+                     "You must match the emotional weight, era, and intensity of the user's input. " +
+                     "If the user is happy, be happy. If the user is nostalgic, be nostalgic.";
 
         String body = "{" +
             "\"model\": \"llama-3.1-8b-instant\"," + 
             "\"messages\": [" +
                 "{\"role\": \"system\", \"content\": \"" + systemRules + "\"}," +
-                "{\"role\": \"user\", \"content\": \"Input: " + safePrompt + "\"}" +
+                "{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}" +
             "]," +
-            "\"temperature\": 0.0," + 
-            "\"top_p\": 1," +
-            "\"max_tokens\": 100" + 
+            "\"temperature\": 0.2," + 
+            "\"max_tokens\": 150" +
         "}";
 
         URL urlObj = new URL(url);
