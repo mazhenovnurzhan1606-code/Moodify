@@ -70,21 +70,22 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "Act as a Semantic Analysis Expert. Analyze this user input: '%s'.\n\n" +
-                "TASK:\n" +
-                "1. IDENTIFY: Determine if the input is a Book, a Movie, or a Song.\n" +
-                "2. MIRROR: You MUST include the exact input '%s' in the corresponding category in your output.\n" +
-                "3. MATCH: Provide 2 additional matching recommendations for the remaining categories that share the same 'soul', era, and emotional weight.\n\n" +
-                "STRICT OUTPUT RULES:\n" +
-                "- Line 1: BOOK title only\n" +
-                "- Line 2: MOVIE title only\n" +
-                "- Line 3: SONG (Artist - Title) only\n" +
-                "- NO extra text, NO quotes, NO labels.\n\n" +
-                "IMPORTANT: YOU SHOULD GIVE ONLY THREE LINES OF OUTPUT\n" +
-                "EXAMPLE (if input was 'Inception'):\n" +
-                "Ubik\n" +
-                "Inception\n" +
-                "Hans Zimmer - Time",
+                "You are a metadata engine. Analyze user input: '%s'.\n" +
+                "Rules:\n" +
+                "- If the input is a Book, Movie, or Song, use it as the recommendation for its category.\n" +
+                "- Provide exactly 3 lines (1. Book, 2. Movie, 3. Song).\n" +
+                "- NO labels, NO 'Line 1:', NO intro.\n\n" +
+                "Example:\n" +
+                "Input: 'Interstellar'\n" +
+                "The Martian\n" +
+                "Interstellar\n" +
+                "Hans Zimmer - Stay\n\n" +
+                "Example:\n" +
+                "Input: 'The Great Gatsby'\n" +
+                "The Great Gatsby\n" +
+                "Midnight in Paris\n" +
+                "Lana Del Rey - Young and Beautiful\n\n" +
+                "Input: '%s'",
                 mood, mood
             );
 
@@ -108,13 +109,19 @@ public class MoodyServer {
                                 .replace("\n", "\\n")
                                 .replace("\r", "\\r");
 
+        String systemRules = "You are a specialized NLU metadata mirror. " +
+                     "Make deep search to find the suitable book, movie, and song that match the user's mood. Do not just take the input's word and execute by this word " +
+                     "If input is a book, look its description and find the vibe of this book and recommend a movie and a song with the same vibe. If its a movie, do the same. If its a song, look to its lyrics and based on this give recommendations. " +
+                     "Return exactly 3 lines of text: the book title, then the movie title, then the artist - song. " +
+                     "Do not use any labels, bullet points, or quotes.";
+
         String body = "{" +
             "\"model\": \"llama-3.1-8b-instant\"," + 
             "\"messages\": [" +
-                "{\"role\": \"system\", \"content\": \"You are a helpful assistant that provides recommendations in a strict 3-line format.\"}," +
+                "{\"role\": \"system\", \"content\": \"" + systemRules + "\"}," +
                 "{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}" +
             "]," +
-            "\"temperature\": 0.6" +
+            "\"temperature\": 0.1" + 
         "}";
 
         URL urlObj = new URL(url);
