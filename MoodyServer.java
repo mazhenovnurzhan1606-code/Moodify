@@ -70,17 +70,21 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "Perform a deep NLU analysis on the user input: '%s'.\n\n" +
-                "1. EXTRACT VIBE: Identify the core emotional energy (e.g., 'High-energy joy', 'Dark academia melancholy', 'Summer road trip vibes').\n" +
-                "2. FIND MATCHES: Recommend a Book, a Movie, and a Song that have the EXACT same emotional frequency.\n" +
-                "3. MIRROR: If the input '%s' is a specific title, include it in the correct line.\n" +
-                "4. NO DISSONANCE: Do not mix a happy song with a sad book. The soul of all 3 items must be identical.\n\n" +
-                "STRICT FORMAT:\n" +
-                "Line 1: [Book Title]\n" +
-                "Line 2: [Movie Title]\n" +
-                "Line 3: [Artist - Song Title]\n" +
-                "NO LABELS, NO CHAT, NO EXPLANATIONS.",
-                mood, mood
+                "ACT AS A MULTI-MODAL VIBE-ENGINE. User input: '%s'\n\n" +
+                "1. ANALYZE (NLU): Determine the input's 'Emotional Coordinates':\n" +
+                "   - Energy Level (High/Low)\n" +
+                "   - Valence (Happy/Sad/Neutral)\n" +
+                "   - Texture (Aesthetic, Era, Genre)\n\n" +
+                "2. FIND MATCHES: Select 1 Book, 1 Movie, 1 Song.\n" +
+                "   - CRITICAL: Every item must have the EXACT SAME energy and texture.\n" +
+                "   - NO DISSONANCE: Do not match electronic with acoustic unless they share the soul.\n" +
+                "   - MIRROR: If the input '%s' is a known title, include it in the correct category.\n\n" +
+                "3. FORMAT (STRICT): Output ONLY 3 lines. No labels. No intros. No extra text.\n" +
+                "   Line 1: [Book Title]\n" +
+                "   Line 2: [Movie Title]\n" +
+                "   Line 3: [Artist - Song Title]\n\n" +
+                "Input: '%s'",
+                mood, mood, mood
             );
 
             String aiResponse = callGroq(prompt);
@@ -103,10 +107,10 @@ public class MoodyServer {
                                 .replace("\n", "\\n")
                                 .replace("\r", "\\r");
 
-        String systemRules = "You are a professional NLU-based recommendation engine. " +
-                     "Your only output is 3 lines of text. No labels. " +
-                     "You must match the emotional weight, era, and intensity of the user's input. " +
-                     "If the user is happy, be happy. If the user is nostalgic, be nostalgic.";
+        String systemRules = "You are a silent NLU Metadata API. " +
+                     "Return exactly 3 lines of raw data. " +
+                     "Prioritize emotional resonance and energy matching. " +
+                     "No talk, no labels, no explanations.";
 
         String body = "{" +
             "\"model\": \"llama-3.1-8b-instant\"," + 
