@@ -81,6 +81,9 @@ public class MoodyServer {
                 "Line 2: [Only Movie Title]\n" +
                 "Line 3: [Only Artist - Song Title]\n\n" +
                 "CONSTRAINTS:\n" +
+                "- CROSS-DOMAIN RULE: Do not use the same artist or franchise for all 3 lines." + 
+                "- If the input is a song by Queen, the Book and Movie must NOT be about Queen." +
+                "- Find items that SHARE THE VIBE (e.g., theatrical, high-energy, glam rock aesthetic) but are different works of art." +
                 "- Mirror input '%s' in the correct line if it is a title.\n" +
                 "- NO LABELS (No 'Music:', No 'Line 1:').\n" +
                 "- NO CHAT. NO INTROS.\n" +
