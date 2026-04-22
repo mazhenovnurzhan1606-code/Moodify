@@ -70,20 +70,22 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "ACT AS A MULTI-MODAL VIBE-ENGINE. User input: '%s'\n\n" +
-                "1. ANALYZE (NLU): Determine the input's 'Emotional Coordinates':\n" +
-                "   - Energy Level (High/Low)\n" +
-                "   - Valence (Happy/Sad/Neutral)\n" +
-                "   - Texture (Aesthetic, Era, Genre)\n\n" +
-                "2. FIND MATCHES: Select 1 Book, 1 Movie, 1 Song.\n" +
-                "   - CRITICAL: Every item must have the EXACT SAME energy and texture.\n" +
-                "   - NO DISSONANCE: Do not match electronic with acoustic unless they share the soul.\n" +
-                "   - MIRROR: If the input '%s' is a known title, include it in the correct category.\n\n" +
-                "3. FORMAT (STRICT): Output ONLY 3 lines. No labels. No intros. No extra text.\n" +
-                "   Line 1: [Book Title]\n" +
-                "   Line 2: [Movie Title]\n" +
-                "   Line 3: [Artist - Song Title]\n\n" +
-                "Input: '%s'",
+                "SYSTEM: NLU_VIBE_CHECK_PROTOCOL\n" +
+                "INPUT: '%s'\n\n" +
+                "CORE MISSION:\n" +
+                "1. ANALYZE: Extract emotional DNA (Energy, Valence, Era, Aesthetic).\n" +
+                "2. SYNC: Select items with 100%% DNA match. No vibe dissonance.\n" +
+                "3. CATEGORIZE: Ensure Book is a Book, Movie is a Movie, Song is a Song.\n\n" +
+                "STRICT OUTPUT ARCHITECTURE:\n" +
+                "Line 1: [Only Book Title]\n" +
+                "Line 2: [Only Movie Title]\n" +
+                "Line 3: [Only Artist - Song Title]\n\n" +
+                "CONSTRAINTS:\n" +
+                "- Mirror input '%s' in the correct line if it is a title.\n" +
+                "- NO LABELS (No 'Music:', No 'Line 1:').\n" +
+                "- NO CHAT. NO INTROS.\n" +
+                "- ALL 3 lines must share the same 'Aesthetic Temperature'.\n\n" +
+                "EXECUTE FOR INPUT: '%s'",
                 mood, mood, mood
             );
 
