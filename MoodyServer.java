@@ -70,18 +70,11 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "User input: '%s'. You are an NLU Vibe-Matcher.\n\n" +
-                "CORE RULES:\n" +
-                "1. SEMANTIC ANALYSIS: Break down the input's soul (era, emotional depth, hidden sadness or joy).\n" +
-                "2. VALIDATION: Check every recommendation against the 'vibe' of the input. If it doesn't match the EXACT emotional temperature, discard it and find another.\n" +
-                "3. NO REPEATS: Book and Movie must be different titles.\n" +
-                "4. MIRRORING: If the input is a title, place it in its line.\n\n" +
-                "STRICT OUTPUT FORMAT:\n" +
-                "Line 1: Book\n" +
-                "Line 2: Movie\n" +
-                "Line 3: Song (Artist - Title)\n" +
-                "NO LABELS, NO INTRO, ONLY 3 LINES.\n\n" +
-                "Input: '%s'",
+                "Vibe-check: '%s'. " +
+                "Find a matching Book, Movie, and Song. " +
+                "If '%s' is a title, mirror it in the output. " +
+                "Ensure the Book and Movie are different. " +
+                "Output only 3 lines.",
                 mood, mood
             );
 
@@ -105,19 +98,21 @@ public class MoodyServer {
                                 .replace("\n", "\\n")
                                 .replace("\r", "\\r");
 
-        String systemRules = "You are a specialized NLU metadata mirror. " +
-                     "Make deep search to find the suitable book, movie, and song that match the user's mood. Do not just take the input's word and execute by this word " +
-                     "If input is a book, look its description and find the vibe of this book and recommend a movie and a song with the same vibe. If its a movie, do the same. If its a song, look to its lyrics and based on this give recommendations. " +
-                     "Return exactly 3 lines of text: the book title, then the movie title, then the artist - song. " +
-                     "Do not use any labels, bullet points, or quotes.";
+        String systemRules = "You are a silent NLU metadata API. " +
+                     "Your output must contain ONLY 3 lines of text. " +
+                     "Line 1: Book Title, Line 2: Movie Title, Line 3: Artist - Song. " +
+                     "STRICT RULES: No labels (No 'Movie:', No 'Book:'), no explanations, no intro sentences. " +
+                     "If you write any explanation, you fail.";
 
         String body = "{" +
             "\"model\": \"llama-3.1-8b-instant\"," + 
             "\"messages\": [" +
                 "{\"role\": \"system\", \"content\": \"" + systemRules + "\"}," +
-                "{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}" +
+                "{\"role\": \"user\", \"content\": \"Input: " + safePrompt + "\"}" +
             "]," +
-            "\"temperature\": 0.1" + 
+            "\"temperature\": 0.0," + 
+            "\"top_p\": 1," +
+            "\"max_tokens\": 100" + 
         "}";
 
         URL urlObj = new URL(url);
