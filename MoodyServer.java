@@ -70,26 +70,24 @@ public class MoodyServer {
             String mood = extractMood(requestBody);
 
            String prompt = String.format(
-                "SYSTEM: NLU_VIBE_CHECK_PROTOCOL\n" +
-                "INPUT: '%s'\n\n" +
-                "CORE MISSION:\n" +
-                "1. ANALYZE: Extract emotional DNA (Energy, Valence, Era, Aesthetic).\n" +
-                "2. SYNC: Select items with 100%% DNA match. No vibe dissonance.\n" +
-                "3. CATEGORIZE: Ensure Book is a Book, Movie is a Movie, Song is a Song.\n\n" +
-                "STRICT OUTPUT ARCHITECTURE:\n" +
-                "Line 1: [Only Book Title]\n" +
-                "Line 2: [Only Movie Title]\n" +
-                "Line 3: [Only Artist - Song Title]\n\n" +
-                "CONSTRAINTS:\n" +
-                "- CROSS-DOMAIN RULE: Do not use the same artist or franchise for all 3 lines." + 
-                "- If the input is a song by Queen, the Book and Movie must NOT be about Queen." +
-                "- Find items that SHARE THE VIBE (e.g., theatrical, high-energy, glam rock aesthetic) but are different works of art." +
-                "- Mirror input '%s' in the correct line if it is a title.\n" +
-                "- NO LABELS (No 'Music:', No 'Line 1:').\n" +
-                "- NO CHAT. NO INTROS.\n" +
-                "- ALL 3 lines must share the same 'Aesthetic Temperature'.\n\n" +
-                "EXECUTE FOR INPUT: '%s'",
-                mood, mood, mood
+                "ACT AS A PROFESSIONAL CONTENT CURATOR. MATCH THE VIBE EXACTLY.\n\n" +
+                "--- EXAMPLES OF PERFECT MATCHES ---\n" +
+                "Input: 'Scientific discovery and lonely space'\n" +
+                "Book: Project Hail Mary\n" +
+                "Movie: Interstellar\n" +
+                "Song: David Bowie - Space Oddity\n\n" +
+                "Input: 'Neon lights and fast cars'\n" +
+                "Book: Neuromancer\n" +
+                "Movie: Drive\n" +
+                "Song: Kavinsky - Nightcall\n\n" +
+                "--- YOUR TASK ---\n" +
+                "Input: '%s'\n\n" +
+                "RULES:\n" +
+                "- Mirror titles from input.\n" +
+                "- Match energy, era, and aesthetic.\n" +
+                "- STRICT FORMAT: 3 lines total. No labels.\n\n" +
+                "Output:",
+                mood, mood
             );
 
             String aiResponse = callGroq(prompt);
