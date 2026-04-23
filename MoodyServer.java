@@ -72,6 +72,10 @@ public class MoodyServer {
            String prompt = String.format(
                 "ACT AS A PROFESSIONAL CONTENT CURATOR. MATCH THE VIBE EXACTLY.\n\n" +
                 "--- EXAMPLES OF PERFECT MATCHES ---\n" +
+                "Input: 'I want a movie based on music What makes you beautiful'\n" +
+                "Book: The Perks of Being a Wallflower\n" +
+                "Movie: Sing\n" +
+                "Song: One Direction - What Makes You Beautiful\n\n" +
                 "Input: 'Scientific discovery and lonely space'\n" +
                 "Book: Project Hail Mary\n" +
                 "Movie: Interstellar\n" +
@@ -86,6 +90,7 @@ public class MoodyServer {
                 "- Mirror titles from input.\n" +
                 "- Match energy, era, and aesthetic.\n" +
                 "- STRICT FORMAT: 3 lines total. No labels.\n\n" +
+                "- IMPRTANT: output should be without words like 'Book:', 'Movie:', or 'Song:'" +
                 "Output:",
                 mood, mood
             );
