@@ -87,7 +87,12 @@ public class MoodyServer {
                 "--- YOUR TASK ---\n" +
                 "Input: '%s'\n\n" +
                 "RULES:\n" +
-                "- Mirror titles from input.\n" +
+                "STRICT OUTPUT ARCHITECTURE:\n" +
+                "Line 1 (Must be a Book): [Title]\n" +
+                "Line 2 (Must be a Movie): [Title]\n" +
+                "Line 3 (Must be a Song): [Artist - Song Title]\n\n" +
+                "IMPORTANT: Even if the input '%s' is a song, place it on Line 3. " +
+                "Do not put songs in the Book line." +
                 "- Match energy, era, and aesthetic.\n" +
                 "- STRICT FORMAT: 3 lines total. No labels.\n\n" +
                 "- IMPRTANT: output should be without words like 'Book:', 'Movie:', or 'Song:'" +
