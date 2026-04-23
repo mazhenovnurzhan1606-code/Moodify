@@ -129,7 +129,7 @@ public class MoodyServer {
                      "No talk, no labels, no explanations.";
 
         String body = "{" +
-            "\"model\": \"llama-3.1-8b-instant\"," + 
+            "\"model\": \"gemma2-9b-it\"," + 
             "\"messages\": [" +
                 "{\"role\": \"system\", \"content\": \"" + systemRules + "\"}," +
                 "{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}" +
