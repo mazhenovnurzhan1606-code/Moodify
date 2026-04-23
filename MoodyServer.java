@@ -7,7 +7,7 @@ import java.nio.file.Files;
 
 public class MoodyServer {
 
-    private static final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
+    private static final String GEMINI_API_KEY = System.getenv("GEMINI_API_KEY");
     public static void main(String[] args) throws Exception {
         String portEnv = System.getenv("PORT");
         int port = (portEnv != null) ? Integer.parseInt(portEnv) : 8080;
@@ -103,8 +103,8 @@ public class MoodyServer {
                 mood, mood
             );
 
-            String aiResponse = callGroq(prompt);
-            String cleanText = parseGroqResponse(aiResponse);
+            String aiResponse = callGemini(prompt);
+            String cleanText = parseGeminiResponse(aiResponse);
             
             System.out.println("--- AI RESPONSE ---\n" + cleanText);
             sendResponse(exchange, cleanText);
@@ -115,36 +115,34 @@ public class MoodyServer {
         }
     }
 
-    private static String callGroq(String prompt) throws Exception {
-        String url = "https://api.groq.com/openai/v1/chat/completions";
+    private static String callGemini(String prompt) throws Exception {
+        // URL для Gemini 1.5 Flash (быстрая и бесплатная)
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
         
         String safePrompt = prompt.replace("\\", "\\\\")
                                 .replace("\"", "\\\"")
                                 .replace("\n", "\\n")
                                 .replace("\r", "\\r");
 
+        // Инструкция для системы теперь объединяется с промптом пользователя для Gemini
         String systemRules = "You are a silent NLU Metadata API. " +
-                     "Return exactly 3 lines of raw data. " +
-                     "Prioritize emotional resonance and energy matching. " +
-                     "No talk, no labels, no explanations.";
+                            "Return exactly 3 lines of raw data. No talk, no labels.";
 
+        // Структура JSON для Gemini отличается от OpenAI/Groq
         String body = "{" +
-            "\"model\": \"gemma2-9b-it\"," + 
-            "\"messages\": [" +
-                "{\"role\": \"system\", \"content\": \"" + systemRules + "\"}," +
-                "{\"role\": \"user\", \"content\": \"" + safePrompt + "\"}" +
-            "]," +
-            "\"temperature\": 0.2," + 
-            "\"max_tokens\": 150" +
+            "\"contents\": [{" +
+                "\"parts\": [{\"text\": \"" + systemRules + "\\n\\nInput: " + safePrompt + "\"}]" +
+            "}]," +
+            "\"generationConfig\": {" +
+                "\"temperature\": 0.1," +
+                "\"maxOutputTokens\": 150" +
+            "}" +
         "}";
 
         URL urlObj = new URL(url);
         HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
         conn.setRequestMethod("POST");
-        System.out.println("DEBUG KEY: [" + GROQ_API_KEY + "]");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Authorization", "Bearer " + GROQ_API_KEY);
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
         conn.setDoOutput(true);
         
         try (OutputStream os = conn.getOutputStream()) {
@@ -154,35 +152,34 @@ public class MoodyServer {
         int code = conn.getResponseCode();
         if (code != 200) {
             InputStream es = conn.getErrorStream();
-            System.err.println("Groq API Error: " + readInputStream(es));
+            System.err.println("Gemini API Error: " + readInputStream(es));
             throw new RuntimeException("Status " + code);
         }
 
         return readInputStream(conn.getInputStream());
     }
 
-    private static String parseGroqResponse(String json) {
+    private static String parseGeminiResponse(String json) {
         try {
-            String marker = "\"content\":";
+            // У Gemini ответ лежит по пути: candidates[0].content.parts[0].text
+            String marker = "\"text\":";
             int startPos = json.indexOf(marker);
             
             if (startPos == -1) {
-                System.err.println("❌ Critical: No 'content' field in JSON. Raw response: " + json);
-                return "The Great Gatsby\nInception\nRadiohead - Creep"; 
+                System.err.println("❌ No 'text' field in Gemini JSON");
+                return "1. Error\n2. Error\n3. Error";
             }
 
+            // Находим начало и конец строки в кавычках после "text":
             int quoteStart = json.indexOf("\"", startPos + marker.length());
             int quoteEnd = -1;
             
+            // Ищем закрывающую кавычку, игнорируя экранированные \"
             for (int i = quoteStart + 1; i < json.length(); i++) {
                 if (json.charAt(i) == '\"' && json.charAt(i - 1) != '\\') {
                     quoteEnd = i;
                     break;
                 }
-            }
-
-            if (quoteStart == -1 || quoteEnd == -1) {
-                return "1. Error\n2. Error\n3. Error";
             }
 
             String content = json.substring(quoteStart + 1, quoteEnd)
@@ -193,8 +190,7 @@ public class MoodyServer {
             return content.trim();
             
         } catch (Exception ex) {
-            System.err.println("❌ Parsing failed: " + ex.getMessage());
-            ex.printStackTrace();
+            System.err.println("❌ Gemini Parsing failed: " + ex.getMessage());
             return "1. Error\n2. Error\n3. Error";
         }
     }
