@@ -71,6 +71,9 @@ public class MoodyServer {
 
            String prompt = String.format(
                 "ACT AS A PROFESSIONAL CONTENT CURATOR. MATCH THE VIBE EXACTLY.\n\n" +
+                "TASKS:\n" +
+                "1. DEFINE: What is the 'Emotional DNA' of '%s'? (e.g., Gritty, Sunny, Melancholic, Tech-Noir)\n" +
+                "2. SYNC: Pick 3 items that share this EXACT DNA. No outliers.\n\n" +
                 "--- EXAMPLES OF PERFECT MATCHES ---\n" +
                 "Input: 'I want a movie based on music What makes you beautiful'\n" +
                 "Book: The Perks of Being a Wallflower\n" +
